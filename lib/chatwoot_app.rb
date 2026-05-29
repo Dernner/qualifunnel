@@ -29,6 +29,12 @@ module ChatwootApp
     @custom ||= root.join('custom').exist?
   end
 
+  def self.qualifunnel?
+    return false if ENV.fetch('DISABLE_QUALIFUNNEL', false)
+
+    @qualifunnel ||= root.join('qualifunnel').exist?
+  end
+
   def self.help_center_root
     ENV.fetch('HELPCENTER_URL', nil) || ENV.fetch('FRONTEND_URL', nil)
   end

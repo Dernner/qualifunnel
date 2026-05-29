@@ -1,0 +1,25 @@
+# Dockerfile.dev - Qualifunnel desenvolvimento local
+# Baseado na imagem de desenvolvimento do Chatwoot
+
+FROM ghcr.io/chatwoot/chatwoot_codespace:latest
+
+# Metadados
+LABEL maintainer="Qualifunnel"
+LABEL description="Qualifunnel development image"
+
+WORKDIR /app
+
+# Instalar dependências Ruby
+COPY Gemfile Gemfile.lock ./
+RUN gem install bundler && bundle install --jobs=$(nproc)
+
+# Instalar dependências Node
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Copiar código fonte
+COPY . .
+
+EXPOSE 3000 3036
+
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]

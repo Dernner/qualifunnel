@@ -404,6 +404,18 @@ Rails.application.routes.draw do
           end
 
           resources :upload, only: [:create]
+
+          namespace :kanban do
+            resource :account_user_preferences, only: [:update]
+            resources :boards do
+              resources :steps, controller: 'board_steps', only: [:index, :show, :create, :update, :destroy]
+              resources :tasks, only: [:index, :create, :update, :destroy]
+              post :toggle_favorite, on: :member
+            end
+            resources :tasks do
+              post :move, on: :member
+            end
+          end
         end
       end
       # end of account scoped api routes

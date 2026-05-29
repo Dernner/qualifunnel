@@ -1,0 +1,119 @@
+# docker-compose.dev.yml
+# Qualifunnel - Ambiente de desenvolvimento local
+#
+# Uso:
+#   docker compose -f docker-compose.dev.yml up
+#   docker compose -f docker-compose.dev.yml up -d  (background)
+#   docker compose -f docker-compose.dev.yml down
+
+version: '3.8'
+
+services:
+  # ─── Base de dados ─────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: qualifunnel
+      POSTGRES_PASSWORD: qualifunnel_dev
+      POSTGRES_DB: qualifunnel_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qualifunnel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Cache / Filas ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ─── Email (captura local) ──────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # UI web → http://localhost:8025
+
+  # ─── Rails API ─────────────────────────────────────────────────
+  rails:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "
+        bundle install &&
+        bundle exec rake db:chatwoot_prepare &&
+        bundle exec rails server -b 0.0.0.0 -p 3000
+      "
+    stdin_open: true
+    tty: true
+
+  # ─── Sidekiq (jobs em background) ──────────────────────────────
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/app/node_modules
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+  # ─── Vite (frontend HMR) ───────────────────────────────────────
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/app/node_modules
+    ports:
+      - "3036:3036"
+    command: bin/vite dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache:
+  node_modules:

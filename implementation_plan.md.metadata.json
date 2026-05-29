@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Plano completo para criar um fork do Chatwoot OSS com engine privada meu_app/ seguindo exatamente a mesma estrutura arquitetural do fazer_ai/. Cobre: fork no GitHub, configuração da engine, feature flag, rotas, carregamento do application.rb, e roadmap do Kanban do zero (backend + frontend).",
+  "updatedAt": "2026-05-29T19:09:02.340186100Z",
+  "requestFeedback": true
+}

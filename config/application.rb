@@ -52,6 +52,20 @@ module Chatwoot
     enterprise_initializers = Rails.root.join('enterprise/config/initializers')
     Dir[enterprise_initializers.join('**/*.rb')].each { |f| require f } if enterprise_initializers.exist?
 
+    # Load qualifunnel engine if present
+    qualifunnel_root = Rails.root.join('qualifunnel')
+    if qualifunnel_root.exist?
+      config.eager_load_paths << qualifunnel_root.join('lib')
+      config.eager_load_paths << qualifunnel_root.join('listeners')
+      # rubocop:disable Rails/FilePath
+      config.eager_load_paths += Dir["#{qualifunnel_root}/app/**"]
+      # rubocop:enable Rails/FilePath
+      config.paths['app/views'].unshift(qualifunnel_root.join('app/views').to_s)
+
+      qualifunnel_initializers = qualifunnel_root.join('config/initializers')
+      Dir[qualifunnel_initializers.join('**/*.rb')].each { |f| require f } if qualifunnel_initializers.exist?
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
