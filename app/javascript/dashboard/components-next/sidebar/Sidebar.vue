@@ -452,6 +452,17 @@ const menuItems = computed(() => {
         },
       ],
     },
+    ...(isFeatureEnabledonAccount.value(accountId.value, FEATURE_FLAGS.KANBAN)
+      ? [
+          {
+            name: 'Kanban',
+            icon: 'i-lucide-layout-dashboard',
+            label: t('SIDEBAR.KANBAN'),
+            activeOn: ['kanban_overview', 'kanban_board'],
+            to: accountScopedRoute('kanban_overview'),
+          },
+        ]
+      : []),
     {
       name: 'Contacts',
       label: t('SIDEBAR.CONTACTS'),
