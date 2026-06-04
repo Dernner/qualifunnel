@@ -45,6 +45,18 @@ if (isLibraryMode) {
 
 export default defineConfig({
   plugins: plugins,
+  server: {
+    allowedHosts: true,
+    hmr: {
+      host: 'localhost',
+      protocol: 'ws',
+      port: 3036,
+    },
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
+  },
   css: {
     preprocessorOptions: {
       scss: {
@@ -91,6 +103,7 @@ export default defineConfig({
       survey: path.resolve('./app/javascript/survey'),
       widget: path.resolve('./app/javascript/widget'),
       assets: path.resolve('./app/javascript/dashboard/assets'),
+      kanban: path.resolve('./qualifunnel/app/javascript/kanban'),
     },
   },
   test: {

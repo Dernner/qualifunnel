@@ -136,7 +136,11 @@
       "CONVERSATION_UPDATED": "Conversation Updated",
       "MESSAGE_CREATED": "Message Created",
       "CONVERSATION_RESOLVED": "Conversation Resolved",
-      "CONVERSATION_OPENED": "Conversation Opened"
+      "CONVERSATION_OPENED": "Conversation Opened",
+      "KANBAN_TASK_CREATED": "Task Created",
+      "KANBAN_TASK_UPDATED": "Task Updated",
+      "KANBAN_TASK_WON": "Task Won",
+      "KANBAN_TASK_LOST": "Task Lost"
     },
     "ACTIONS": {
       "ASSIGN_AGENT": "Assign to Agent",
@@ -187,7 +191,8 @@
       "ASSIGNEE_NAME": "Assignee",
       "TEAM_NAME": "Team",
       "PRIORITY": "Priority",
-      "LABELS": "Labels"
+      "LABELS": "Labels",
+      "BOARD": "Funnel"
     }
   }
 }

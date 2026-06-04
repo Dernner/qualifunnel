@@ -1,32 +1,48 @@
-import axios from 'axios';
+/* global axios */
+import ApiClient from 'dashboard/api/ApiClient';
 
-const getTasks = (accountId, boardId) =>
-  axios.get(`/api/v1/accounts/${accountId}/kanban/boards/${boardId}/tasks`);
+class TasksAPI extends ApiClient {
+  constructor() {
+    super('kanban/tasks', { accountScoped: true, apiVersion: 'v1' });
+  }
 
-const createTask = (accountId, boardId, data) =>
-  axios.post(
-    `/api/v1/accounts/${accountId}/kanban/boards/${boardId}/tasks`,
-    { task: data }
-  );
+  get(params) {
+    return axios.get(this.url, { params });
+  }
 
-const updateTask = (accountId, taskId, data) =>
-  axios.patch(`/api/v1/accounts/${accountId}/kanban/tasks/${taskId}`, {
-    task: data,
-  });
+  show(id) {
+    return axios.get(`${this.url}/${id}`);
+  }
 
-const deleteTask = (accountId, taskId) =>
-  axios.delete(`/api/v1/accounts/${accountId}/kanban/tasks/${taskId}`);
+  getByStep(stepId, { page = 1, perPage = 25, sort, order, agentId, inboxId } = {}) {
+    return axios.get(this.url, {
+      params: {
+        board_step_id: stepId,
+        page,
+        per_page: perPage,
+        sort,
+        order,
+        agent_id: agentId,
+        inbox_id: inboxId,
+      },
+    });
+  }
 
-const moveTask = (accountId, taskId, boardStepId, position) =>
-  axios.post(
-    `/api/v1/accounts/${accountId}/kanban/tasks/${taskId}/move`,
-    { board_step_id: boardStepId, position }
-  );
+  create(data) {
+    return axios.post(this.url, data);
+  }
 
-export default {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  moveTask,
-};
+  update(id, data) {
+    return axios.patch(`${this.url}/${id}`, data);
+  }
+
+  move(id, data) {
+    return axios.post(`${this.url}/${id}/move`, data);
+  }
+
+  delete(id) {
+    return axios.delete(`${this.url}/${id}`);
+  }
+}
+
+export default new TasksAPI();

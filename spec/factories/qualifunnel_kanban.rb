@@ -24,4 +24,21 @@ FactoryBot.define do
     association :board, factory: :kanban_board
     association :board_step, factory: :kanban_board_step
   end
+
+  factory :kanban_board_agent, class: 'Qualifunnel::Kanban::BoardAgent' do
+    association :board, factory: :kanban_board
+    association :agent, factory: :user
+  end
+
+  factory :kanban_task_agent, class: 'Qualifunnel::Kanban::TaskAgent' do
+    association :task, factory: :kanban_task
+    association :agent, factory: :user
+  end
+
+  factory :kanban_audit_event, class: 'Qualifunnel::Kanban::AuditEvent' do
+    action { 'task_created' }
+    metadata { {} }
+    association :account
+    association :task, factory: :kanban_task
+  end
 end

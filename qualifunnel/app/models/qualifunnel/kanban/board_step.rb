@@ -10,6 +10,10 @@
 #  position    :integer          not null, default: 0
 #  completed   :boolean          not null, default: false
 #  cancelled   :boolean          not null, default: false
+#  probability :decimal(5,2)     default(0)
+#  color       :string
+#  description :text
+#  tasks_count :integer          not null, default: 0
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
@@ -31,6 +35,7 @@ module Qualifunnel
 
       validates :name, presence: true
       validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+      validates :probability, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }, allow_nil: true
 
       scope :ordered, -> { order(:position) }
       scope :completed, -> { where(completed: true) }

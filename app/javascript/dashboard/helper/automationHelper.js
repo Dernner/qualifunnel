@@ -118,6 +118,7 @@ export const getActionOptions = ({
 export const getConditionOptions = ({
   agents,
   booleanFilterOptions,
+  boards,
   campaigns,
   contacts,
   countries,
@@ -142,6 +143,7 @@ export const getConditionOptions = ({
   const conditionFilterMaps = {
     status: statusFilterOptions,
     assignee_id: agents,
+    board_id: boards,
     contact: contacts,
     inbox_id: inboxes,
     team_id: teams,

@@ -9,16 +9,19 @@ LABEL description="Qualifunnel development image"
 
 WORKDIR /app
 
+# Configurar diretório seguro no Git para evitar erro de propriedade duvidosa no Windows
+RUN git config --global --add safe.directory /app
+
 # Instalar dependências Ruby
-COPY Gemfile Gemfile.lock ./
+COPY --chown=vscode:vscode Gemfile Gemfile.lock ./
 RUN gem install bundler && bundle install --jobs=$(nproc)
 
 # Instalar dependências Node
-COPY package.json pnpm-lock.yaml ./
+COPY --chown=vscode:vscode package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copiar código fonte
-COPY . .
+COPY --chown=vscode:vscode . .
 
 EXPOSE 3000 3036
 

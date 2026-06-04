@@ -1,52 +1,57 @@
-import axios from 'axios';
+/* global axios */
+import ApiClient from 'dashboard/api/ApiClient';
 
-const getBoards = accountId =>
-  axios.get(`/api/v1/accounts/${accountId}/kanban/boards`);
+class BoardsAPI extends ApiClient {
+  constructor() {
+    super('kanban/boards', { accountScoped: true, apiVersion: 'v1' });
+  }
 
-const getBoard = (accountId, boardId) =>
-  axios.get(`/api/v1/accounts/${accountId}/kanban/boards/${boardId}`);
+  get(params) {
+    return axios.get(this.url, { params });
+  }
 
-const createBoard = (accountId, data) =>
-  axios.post(`/api/v1/accounts/${accountId}/kanban/boards`, { board: data });
+  getSteps(boardId, { agentId, inboxId } = {}) {
+    const params = {};
+    if (agentId && agentId !== 'all') params.agent_id = agentId;
+    if (inboxId && inboxId !== 'all') params.inbox_id = inboxId;
+    return axios.get(`${this.url}/${boardId}/steps`, { params });
+  }
 
-const updateBoard = (accountId, boardId, data) =>
-  axios.patch(`/api/v1/accounts/${accountId}/kanban/boards/${boardId}`, {
-    board: data,
-  });
+  updateStep(boardId, stepId, data) {
+    return axios.put(`${this.url}/${boardId}/steps/${stepId}`, data);
+  }
 
-const deleteBoard = (accountId, boardId) =>
-  axios.delete(`/api/v1/accounts/${accountId}/kanban/boards/${boardId}`);
+  deleteStep(boardId, stepId) {
+    return axios.delete(`${this.url}/${boardId}/steps/${stepId}`);
+  }
 
-const getSteps = (accountId, boardId) =>
-  axios.get(
-    `/api/v1/accounts/${accountId}/kanban/boards/${boardId}/steps`
-  );
+  createStep(boardId, data) {
+    return axios.post(`${this.url}/${boardId}/steps`, data);
+  }
 
-const createStep = (accountId, boardId, data) =>
-  axios.post(
-    `/api/v1/accounts/${accountId}/kanban/boards/${boardId}/steps`,
-    { step: data }
-  );
+  create(data) {
+    return axios.post(this.url, { board: data });
+  }
 
-const updateStep = (accountId, boardId, stepId, data) =>
-  axios.patch(
-    `/api/v1/accounts/${accountId}/kanban/boards/${boardId}/steps/${stepId}`,
-    { step: data }
-  );
+  update(boardId, data) {
+    return axios.put(`${this.url}/${boardId}`, data);
+  }
 
-const deleteStep = (accountId, boardId, stepId) =>
-  axios.delete(
-    `/api/v1/accounts/${accountId}/kanban/boards/${boardId}/steps/${stepId}`
-  );
+  updateAgents(boardId, agentIds) {
+    return axios.post(`${this.url}/${boardId}/update_agents`, { agent_ids: agentIds });
+  }
 
-export default {
-  getBoards,
-  getBoard,
-  createBoard,
-  updateBoard,
-  deleteBoard,
-  getSteps,
-  createStep,
-  updateStep,
-  deleteStep,
-};
+  updateInboxes(boardId, inboxIds) {
+    return axios.post(`${this.url}/${boardId}/update_inboxes`, { inbox_ids: inboxIds });
+  }
+
+  getConversations(boardId, query) {
+    return axios.get(`${this.url}/${boardId}/conversations`, { params: { q: query } });
+  }
+
+  toggleFavorite(boardId) {
+    return axios.post(`${this.url}/${boardId}/toggle_favorite`);
+  }
+}
+
+export default new BoardsAPI();

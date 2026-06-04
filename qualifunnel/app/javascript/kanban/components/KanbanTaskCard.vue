@@ -1,17 +1,18 @@
 <script setup>
 import { computed } from 'vue';
-import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
+import { KANBAN_PRIORITIES, intlLocale } from 'kanban/constants';
+import KanbanContextDropdown from './KanbanContextDropdown.vue';
+import Button from 'dashboard/components-next/button/Button.vue';
 
 const props = defineProps({
-  task: {
-    type: Object,
-    required: true,
-  },
+  task: { type: Object, required: true },
+  currency: { type: String, default: 'USD' },
 });
 
-const emit = defineEmits(['click', 'delete']);
+const emit = defineEmits(['click', 'delete', 'duplicate']);
 
-const store = useStore();
+const { t, locale } = useI18n();
 
 const isOverdue = computed(() => {
   if (!props.task.due_date) return false;
@@ -20,47 +21,114 @@ const isOverdue = computed(() => {
 
 const formattedDueDate = computed(() => {
   if (!props.task.due_date) return null;
-  return new Date(props.task.due_date).toLocaleDateString();
+  return new Date(props.task.due_date).toLocaleDateString(intlLocale(locale.value), {
+    month: 'short',
+    day: 'numeric',
+  });
 });
+
+const priority = computed(
+  () =>
+    KANBAN_PRIORITIES.find(p => p.id === props.task.priority) ||
+    KANBAN_PRIORITIES[KANBAN_PRIORITIES.length - 1]
+);
+
+const formattedValue = computed(() => {
+  const val = Number(props.task.value);
+  if (!val || val <= 0) return '';
+  return new Intl.NumberFormat(intlLocale(locale.value), {
+    style: 'currency',
+    currency: props.currency,
+    notation: 'compact',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(val);
+});
+
+const contextOptions = computed(() => [
+  { id: 'duplicate', name: t('KANBAN.MODAL.DUPLICATE'), icon: 'i-lucide-copy' },
+  { id: 'delete', name: t('KANBAN.MODAL.DELETE'), icon: 'i-lucide-trash-2' },
+]);
+
+const handleContextSelect = option => {
+  if (option.id === 'duplicate') emit('duplicate');
+  else if (option.id === 'delete') emit('delete');
+};
+
+const visibleAgents = computed(() => (props.task.assigned_agents || []).slice(0, 3));
 </script>
 
 <template>
   <div
-    class="bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md transition-shadow duration-150"
-    @click="emit('click', task)"
+    class="group relative p-3 bg-n-background border border-n-slate-3 rounded-lg shadow-sm hover:border-n-slate-4 hover:shadow-md transition-all cursor-pointer flex flex-col gap-2"
+    @click="emit('click')"
   >
-    <p class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug">
-      {{ task.title }}
-    </p>
+    <!-- Title + context menu -->
+    <div class="flex items-start justify-between gap-1">
+      <p class="text-sm font-medium text-n-slate-12 leading-snug flex-1 min-w-0">
+        {{ task.title }}
+      </p>
+      <KanbanContextDropdown
+        :options="contextOptions"
+        :has-thumbnail="false"
+        hide-search
+        @select="handleContextSelect"
+      >
+        <template #trigger="{ open }">
+          <Button
+            icon="i-lucide-more-horizontal"
+            variant="ghost"
+            color="slate"
+            size="xs"
+            class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-1"
+            @click.stop="open"
+          />
+        </template>
+      </KanbanContextDropdown>
+    </div>
 
-    <p
-      v-if="task.description"
-      class="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2"
-    >
+    <!-- Description -->
+    <p v-if="task.description" class="text-xs text-n-slate-11 line-clamp-2">
       {{ task.description }}
     </p>
 
-    <div v-if="task.due_date" class="mt-2 flex items-center gap-1">
-      <span
-        class="text-xs px-1.5 py-0.5 rounded"
-        :class="isOverdue
-          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
-      >
-        {{ formattedDueDate }}
-      </span>
-    </div>
+    <!-- Footer: priority, due date, value, agents -->
+    <div class="flex items-center justify-between gap-2 mt-0.5">
+      <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+        <!-- Priority icon -->
+        <i :class="[priority.icon, 'w-3.5 h-3.5 flex-shrink-0']" :style="{ color: priority.color }" />
 
-    <div class="mt-2 flex items-center justify-end">
-      <button
-        class="text-slate-400 hover:text-red-500 transition-colors"
-        @click.stop="emit('delete', task)"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-      </button>
+        <!-- Due date -->
+        <span
+          v-if="formattedDueDate"
+          class="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md"
+          :class="isOverdue ? 'bg-n-red-3 text-n-red-11' : 'bg-n-slate-3 text-n-slate-11'"
+        >
+          <i class="i-lucide-calendar w-3 h-3" />
+          {{ formattedDueDate }}
+        </span>
+
+        <!-- Value -->
+        <span
+          v-if="formattedValue"
+          class="text-xs px-1.5 py-0.5 rounded-md bg-n-slate-3 text-n-slate-11 inline-flex items-center gap-0.5"
+        >
+          <i class="i-lucide-banknote w-3 h-3" />
+          {{ formattedValue }}
+        </span>
+      </div>
+
+      <!-- Agent avatars -->
+      <div v-if="visibleAgents.length" class="flex flex-shrink-0">
+        <img
+          v-for="agent in visibleAgents"
+          :key="agent.id"
+          :src="agent.avatar_url"
+          :alt="agent.name"
+          :title="agent.name"
+          class="w-5 h-5 rounded-full border border-n-background object-cover shadow ltr:[&:not(:first-child)]:-ml-1.5 rtl:[&:not(:first-child)]:-mr-1.5"
+        />
+      </div>
     </div>
   </div>
 </template>

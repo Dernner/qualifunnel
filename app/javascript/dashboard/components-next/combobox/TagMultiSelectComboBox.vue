@@ -42,13 +42,17 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'search']);
 
 const { t } = useI18n();
 
 const selectedValues = ref(props.modelValue);
 const open = ref(false);
 const search = ref('');
+
+watch(search, newSearch => {
+  emit('search', newSearch);
+});
 const dropdownRef = ref(null);
 const comboboxRef = ref(null);
 

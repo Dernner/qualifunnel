@@ -1,0 +1,2 @@
+json.boards []
+json.preferences({})

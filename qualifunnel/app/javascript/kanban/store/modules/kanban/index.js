@@ -1,21 +1,19 @@
-import { actions } from './actions';
-import { mutations } from './mutations';
+import actions from './actions';
+import getters from './getters';
+import mutations from './mutations';
 
 const state = {
   boards: [],
-  currentBoard: null,
+  selectedBoardId: null,
   steps: [],
-  tasks: [],
-};
-
-const getters = {
-  allBoards: s => s.boards,
-  currentBoard: s => s.currentBoard,
-  stepsForCurrentBoard: s => s.steps,
-  tasksForStep: s => stepId =>
-    s.tasks
-      .filter(t => t.board_step_id === stepId)
-      .sort((a, b) => a.position - b.position),
+  isLoading: false,
+  preferences: {},
+  products: [],
+  stepTasks: {},
+  stepMeta: {},
+  stepLoading: {},
+  stepFetched: {},
+  stepRequestVersion: {},
 };
 
 export default {

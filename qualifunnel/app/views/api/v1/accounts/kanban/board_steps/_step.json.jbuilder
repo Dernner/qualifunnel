@@ -1,0 +1,12 @@
+json.id step.id
+json.board_id step.board_id
+json.name step.name
+json.position step.position
+json.completed step.completed
+json.cancelled step.cancelled
+json.probability step.probability
+json.color step.color
+json.description step.description
+json.tasks_count step.tasks_count
+json.created_at step.created_at
+json.updated_at step.updated_at

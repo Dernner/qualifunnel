@@ -69,6 +69,10 @@ module Redis::RedisKeys
   CRM_PROCESS_MUTEX = 'CRM_PROCESS_MUTEX::%<hook_id>s'.freeze
   CAPTAIN_DOCUMENT_SYNC_MUTEX = 'CAPTAIN_DOCUMENT_SYNC_LOCK::%<document_id>s'.freeze
 
+  ## Kanban Keys
+  # Ordered list of agents for round-robin assignment per kanban board
+  KANBAN_BOARD_ROUND_ROBIN_AGENTS = 'KANBAN_BOARD_ROUND_ROBIN_AGENTS:%<board_id>d'.freeze
+
   ## Auto Assignment Keys
   # Track conversation assignments to agents for rate limiting
   ASSIGNMENT_KEY = 'ASSIGNMENT::%<inbox_id>d::AGENT::%<agent_id>d::CONVERSATION::%<conversation_id>d'.freeze

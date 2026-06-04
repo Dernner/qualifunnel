@@ -11,6 +11,7 @@
 #  limits                :jsonb
 #  locale                :integer          default("en")
 #  name                  :string           not null
+#  qualifunnel_flags     :bigint           default(1), not null
 #  settings              :jsonb
 #  status                :integer          default("active")
 #  support_email         :string(100)

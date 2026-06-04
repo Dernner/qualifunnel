@@ -7,3 +7,6 @@ enterprise_tasks_path = Rails.root.join('enterprise/tasks_railtie.rb').to_s
 require enterprise_tasks_path if File.exist?(enterprise_tasks_path)
 
 Rails.application.load_tasks
+
+# Load Qualifunnel-specific rake tasks
+Dir[Rails.root.join('qualifunnel/lib/tasks/**/*.rake')].each { |f| load f } if Rails.root.join('qualifunnel').exist?

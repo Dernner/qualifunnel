@@ -60,6 +60,7 @@ onMounted(() => {
   store.dispatch('labels/get');
   store.dispatch('campaigns/get');
   store.dispatch('automations/get');
+  store.dispatch('qualifunnel/kanban/fetchBoards');
   if (isSLAEnabled.value) {
     store.dispatch('sla/get');
   }

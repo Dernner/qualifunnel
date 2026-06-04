@@ -5,15 +5,18 @@ class Api::V1::Accounts::Kanban::BoardStepsController < Api::V1::Accounts::Kanba
   before_action :find_step, only: [:show, :update, :destroy]
 
   def index
+    authorize Qualifunnel::Kanban::BoardStep
     @steps = @board.steps.ordered
     render json: @steps
   end
 
   def show
+    authorize @step, policy_class: Qualifunnel::Kanban::BoardStepPolicy
     render json: @step
   end
 
   def create
+    authorize Qualifunnel::Kanban::BoardStep
     @step = @board.steps.build(step_params)
     @step.position = @board.steps.count
     if @step.save
@@ -24,6 +27,7 @@ class Api::V1::Accounts::Kanban::BoardStepsController < Api::V1::Accounts::Kanba
   end
 
   def update
+    authorize @step, policy_class: Qualifunnel::Kanban::BoardStepPolicy
     if @step.update(step_params)
       render json: @step
     else
@@ -32,6 +36,7 @@ class Api::V1::Accounts::Kanban::BoardStepsController < Api::V1::Accounts::Kanba
   end
 
   def destroy
+    authorize @step, policy_class: Qualifunnel::Kanban::BoardStepPolicy
     @step.destroy!
     head :no_content
   end
@@ -47,6 +52,6 @@ class Api::V1::Accounts::Kanban::BoardStepsController < Api::V1::Accounts::Kanba
   end
 
   def step_params
-    params.require(:step).permit(:name, :position, :completed, :cancelled)
+    params.require(:step).permit(:name, :position, :completed, :cancelled, :probability, :color, :description)
   end
 end

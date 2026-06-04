@@ -21,6 +21,7 @@ export default function useAutomationValues() {
   const getters = useStoreGetters();
   const { t } = useI18n();
   const agents = useMapGetter('agents/getVerifiedAgents');
+  const boards = useMapGetter('qualifunnel/kanban/getBoards');
   const campaigns = useMapGetter('campaigns/getAllCampaigns');
   const contacts = useMapGetter('contacts/getContacts');
   const inboxes = useMapGetter('inboxes/getInboxes');
@@ -99,6 +100,7 @@ export default function useAutomationValues() {
   const getConditionDropdownValues = type => {
     return getConditionOptions({
       agents: agents.value,
+      boards: (boards.value || []).map(b => ({ id: b.id, name: b.name })),
       booleanFilterOptions: booleanFilterOptions.value,
       campaigns: campaigns.value,
       contacts: contacts.value,
@@ -153,6 +155,7 @@ export default function useAutomationValues() {
     getConditionDropdownValues,
     getActionDropdownValues,
     agents,
+    boards,
     campaigns,
     contacts,
     inboxes,

@@ -1,7 +1,8 @@
 version: '3'
 
 services:
-  base: &base
+  # Build base image first, don't run as service
+  base:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
@@ -10,29 +11,33 @@ services:
         EXECJS_RUNTIME: 'Node'
         RAILS_ENV: 'development'
         RAILS_SERVE_STATIC_FILES: 'false'
-    tty: true
-    stdin_open: true
+      target: chatwoot
     image: chatwoot:development
-    env_file: .env
+    profiles:
+      - donotstart
 
   rails:
-    <<: *base
     build:
       context: .
       dockerfile: ./docker/dockerfiles/rails.Dockerfile
+      args:
+        BUNDLE_WITHOUT: ''
+        EXECJS_RUNTIME: 'Node'
+        RAILS_ENV: 'development'
+        RAILS_SERVE_STATIC_FILES: 'false'
     image: chatwoot-rails:development
-    volumes:
-      - ./:/app:delegated
-      - node_modules:/app/node_modules
-      - packs:/app/public/packs
-      - cache:/app/tmp/cache
-      - bundle:/usr/local/bundle
     depends_on:
       - postgres
       - redis
       - vite
       - mailhog
       - sidekiq
+    volumes:
+      - ./:/app:delegated
+      - node_modules:/app/node_modules
+      - packs:/app/public/packs
+      - cache:/app/tmp/cache
+      - bundle:/usr/local/bundle
     ports:
       - 3000:3000
     env_file: .env
@@ -40,12 +45,19 @@ services:
       - VITE_DEV_SERVER_HOST=vite
       - NODE_ENV=development
       - RAILS_ENV=development
-    entrypoint: docker/entrypoints/rails.sh
-    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b 0.0.0.0"
 
   sidekiq:
-    <<: *base
-    image: chatwoot-rails:development
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        BUNDLE_WITHOUT: ''
+        EXECJS_RUNTIME: 'Node'
+        RAILS_ENV: 'development'
+        RAILS_SERVE_STATIC_FILES: 'false'
+      target: chatwoot
+    image: chatwoot:development
     volumes:
       - ./:/app:delegated
       - node_modules:/app/node_modules
@@ -56,16 +68,21 @@ services:
       - postgres
       - redis
       - mailhog
+    env_file: .env
     environment:
       - NODE_ENV=development
       - RAILS_ENV=development
     command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
 
   vite:
-    <<: *base
     build:
       context: .
       dockerfile: ./docker/dockerfiles/vite.Dockerfile
+      args:
+        BUNDLE_WITHOUT: ''
+        EXECJS_RUNTIME: 'Node'
+        RAILS_ENV: 'development'
+        RAILS_SERVE_STATIC_FILES: 'false'
     image: chatwoot-vite:development
     volumes:
       - ./:/app:delegated
@@ -74,13 +91,12 @@ services:
       - cache:/app/tmp/cache
       - bundle:/usr/local/bundle
     ports:
-      - "3036:3036" # Vite dev server
+      - "3036:3036"
     environment:
       - VITE_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
       - RAILS_ENV=development
-    entrypoint: docker/entrypoints/vite.sh
-    command: bin/vite dev
+    command: ["bundle", "exec", "vite", "dev"]
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -90,9 +106,9 @@ services:
     volumes:
       - postgres:/data/postgres
     environment:
-      - POSTGRES_DB=chatwoot
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=
+      - POSTGRES_USER=qualifunnel
+      - POSTGRES_PASSWORD=qualifunnel_dev
+      - POSTGRES_DB=qualifunnel_development
 
   redis:
     image: redis:alpine
